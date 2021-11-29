@@ -1,8 +1,14 @@
 This is the code base for my computer system monitoring project as my capstone project.
 
-#Setup:
+#Prerequisites:
+At least one Windows or Microsoft Server computer or virtual machine for each of the three roles: one management console, one managed host, and one central management server.
+All computers connected to the software need to be compatible with Windows PowerShell.
+All three computers need to be accessible to eachother through an internal network.
+Wireshark and Putty installed on all computers or virtual machine in the environment.
+All computers will need to run the SetUp.ps1 script, which will enable SSH and RDP, as well as make rules for them in the firewall.
 
-For each client you install the client to, place the Client Files in a folder name C:\Capstone.
+#Setup:
+For each client you want to establish as a managed host, place the Client Files in a folder name C:\Capstone.
 For the clients, servers, and management consoles, run the SetUp.ps1 file, this enables SSH and RDP.
 Next install Wireshark and Putty on all of the computers in the network. 
 WireShark Download Link: https://www.wireshark.org/download.html
@@ -10,12 +16,10 @@ Putty Download Link: https://www.putty.org/
 For the management consoles, main.ps1 and main.bat in a folder of it's own. Example location: C:\Capstone\ .
 
 #Use:
-
 Double click the main.bat file in or run the main.ps1 file in PowerShell. 
 Add clients and servers on your network. They must be on the same subnet.
 
 #Getting Started:
-
 Use the Add Host button to add your first device you would like to manage.
 Use the Add Server button to add your first server you would like to use.
 You can edit the dashboard to add your devices here as well to get information at a glance.
