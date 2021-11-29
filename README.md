@@ -6,4 +6,8 @@ For the clients, servers, and management consoles, run the SetUp.ps1 file, this 
 Next install Wireshark and Putty on all of the computers in the network. 
 WireShark Download Link: https://www.wireshark.org/download.html
 Putty Download Link: https://www.putty.org/
+For the management consoles, main.ps1 and main.bat in a folder of it's own. Example location: C:\Capstone\ .
 
+#Use
+Double click the main.bat file in or run the main.ps1 file in PowerShell. 
+Add clients and servers on your network. They must be on the same subnet.
