@@ -37,7 +37,7 @@ $maincomboboxSelectEndPoint.height         = 20
 $MainComboboxSelectEndPoint.location       = New-Object System.Drawing.Point(880,60)
 $MainComboboxSelectEndPoint.Font           = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 $MainComboboxSelectEndPoint.DropDownStyle  = "DropDownList"
-#"$PSScriptRoot\sessions.csv"
+#populates the combobox with IP addresses from the sessions.csv file
 $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
 @($sessions.IP_Address) | ForEach-Object {[void] $MainComboboxSelectEndPoint.Items.Add($_)}
 
@@ -60,7 +60,7 @@ $MainComboboxSelectServer.height         = 20
 $MainComboboxSelectServer.location       = New-Object System.Drawing.Point(880,145)
 $MainComboboxSelectServer.Font           = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 $MainComboboxSelectServer.DropDownStyle  = "DropDownList"
-#"$PSScriptRoot\servers.csv"
+##populates the combobox with IP addresses from the servers.csv file
 $sessions = Import-Csv "$PSScriptRoot\servers.csv"
 @($sessions.IP_Address) | ForEach-Object {[void] $MainComboboxSelectServer.Items.Add($_)}
 
@@ -1345,13 +1345,7 @@ $AddServerCloseWindowButton.Add_Click({ [void]$AddServerForm.Close() })
 #functions for objects 
 
 
-#Functions for MainForm
-#needs work, doesn't work now
-function MainButtonRemoveHostClick { 
-    $sessions = (Import-Csv "$PSScriptRoot\sessions.csv")
-    $sessions = (where IP_Address -NotLike $MainComboboxSelectEndPoint.selecteditem)
-    $sessions | Export-Csv "$PSScriptRoot\sessions.csv"
-}
+#functions for the main form 
 
 #populates the dashboard with the refresh button
 function MainButtonRefreshDashboardClick {
@@ -1370,18 +1364,23 @@ function MainButtonRefreshDashboardClick {
 
 
     #populates timestamps
+    #first gets the username and password from the IP address located on MainDashboardHostIPTextbox1 from sessions.csv
     $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
     $sessions = ($sessions | Where-Object IP_Address -eq $MainDashboardHostIPTextbox1.text)
     $ip = $MainDashboardHostIPTextbox1.text
     $username = $sessions.Username
     $password = $sessions.Password
+    #command gets the date in hour, minute, second format
     $command = "Get-Date -Format ""HH:mm:ss"""
+    #imports the csv with the information from servers.csv 
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
     $server_username = $servers.Username
     $server_password = $servers.Password
+    #sends a plink command through the server to query the managed host
     $data = (plink.exe $server_username@$server_ip -pw $server_password -batch "plink.exe $username@$ip -pw $password -batch powershell $command")
+    #populates the textbox value with the output of the command
     $MainDashboardTimestampTextbox1.text = "$data"
 
     $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
@@ -1433,12 +1432,15 @@ function MainButtonRefreshDashboardClick {
     $ip = $MainDashboardHostIPTextbox1.text
     $username = $sessions.Username
     $password = $sessions.Password
+    #the command tests the availability of port 22 using tcp
     $command = "Test`-NetConnection `-ComputerName $ip `-Port 22 `-InformationLevel Quiet"
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
     $server_username = $servers.Username
     $server_password = $servers.Password
+    #if the conneciton was successful, the textbox gets the value "Good"
+    #if the connection failes, the textbox gets the value "Bad"
     $data = (plink.exe $server_username@$server_ip -pw $server_password -batch "plink.exe $username@$ip -pw $password -batch powershell $command")
     if ($data -eq $True){
         $MainDashboardPort22Textbox1.text = "Good"
@@ -1511,6 +1513,7 @@ function MainButtonRefreshDashboardClick {
     $ip = $MainDashboardHostIPTextbox1.text
     $username = $sessions.Username
     $password = $sessions.Password
+    #the command tests the availability of port 3389 using tcp
     $command = "Test`-NetConnection `-ComputerName $ip `-Port 3389 `-InformationLevel Quiet"
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
@@ -1589,7 +1592,8 @@ function MainButtonRefreshDashboardClick {
     $ip = $MainDashboardHostIPTextbox1.text
     $username = $sessions.Username
     $password = $sessions.Password
-    $command = "Test`-NetConnection `-ComputerName $ip `-Port 3389 `-InformationLevel Quiet"
+    #the command tests the availability using ICMP traffic
+    $command = "Test`-NetConnection `-ComputerName $ip `-InformationLevel Quiet"
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
@@ -1608,7 +1612,7 @@ function MainButtonRefreshDashboardClick {
     $ip = $MainDashboardHostIPTextbox2.text
     $username = $sessions.Username
     $password = $sessions.Password
-    $command = "Test`-NetConnection `-ComputerName $ip `-Port 3389 `-InformationLevel Quiet"
+    $command = "Test`-NetConnection `-ComputerName $ip `-InformationLevel Quiet"
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
@@ -1627,7 +1631,7 @@ function MainButtonRefreshDashboardClick {
     $ip = $MainDashboardHostIPTextbox3.text
     $username = $sessions.Username
     $password = $sessions.Password
-    $command = "Test`-NetConnection `-ComputerName $ip `-Port 3389 `-InformationLevel Quiet"
+    $command = "Test`-NetConnection `-ComputerName $ip `-InformationLevel Quiet"
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
@@ -1646,7 +1650,7 @@ function MainButtonRefreshDashboardClick {
     $ip = $MainDashboardHostIPTextbox4.text
     $username = $sessions.Username
     $password = $sessions.Password
-    $command = "Test`-NetConnection `-ComputerName $ip `-Port 3389 `-InformationLevel Quiet"
+    $command = "Test`-NetConnection `-ComputerName $ip `-InformationLevel Quiet"
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
@@ -1668,6 +1672,8 @@ function MainButtonRefreshDashboardClick {
     $ip = $MainDashboardHostIPTextbox1.text
     $username = $sessions.Username
     $password = $sessions.Password
+    #runs the cpu.ps1 file on the managed host
+    #the file gets the current cpu utilization percentage
     $command = "cd C:\Capstone; powershell .\cpu.ps1"
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
@@ -1733,6 +1739,8 @@ function MainButtonRefreshDashboardClick {
     $ip = $MainDashboardHostIPTextbox1.text
     $username = $sessions.Username
     $password = $sessions.Password
+    #runs the ram.ps1 file on the managed host
+    #the file gets the current ram utilization percentage
     $command = "cd C:\Capstone; powershell .\ram.ps1"
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
@@ -1792,13 +1800,13 @@ function MainButtonRefreshDashboardClick {
 
 #function to open rdp session
 function MainButtonOpenRDPClick {
-    #need to export this to a file and run it, with the variables set
-    #may not need the csv
+    #imports sessions.csv for the target hosts IP
     $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
     $sessions = ($sessions | Where-Object IP_Address -eq $MainComboboxSelectEndPoint.selecteditem)
 
     $ip = $MainComboboxSelectEndPoint.selecteditem
 
+    #imports servers.csv to get the server's credentials and IP
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
@@ -1813,24 +1821,34 @@ function MainButtonOpenRDPClick {
     start powershell {.\rdp_script.ps1}
     
     #opens rdp
+    #because of port forwarding, 127.0.0.1:4444 is the target managed host
+    #close the powershell session with the ssh port forwarding to remove the port forwarding
     mstsc /v:127.0.0.1:4444
 
 }
 
 
+
+#Functions for the Process List Form
+
+#function to generate process list
 function MainButtonOpenProcessesClick {
+    #imports sessions.csv to get the IP address and authentication information for the managed host
     $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
     $sessions = ($sessions | Where-Object IP_Address -eq $MainComboboxSelectEndPoint.selecteditem)
     $ip = $MainComboboxSelectEndPoint.selecteditem
     $username = $sessions.Username
     $password = $sessions.Password
 
+    #imports servers.csv to get the IP address and authentication information for the managed host
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
     $server_username = $servers.Username
     $server_password = $servers.Password
 
+    #runs the tasklist.ps1 script on the host
+    #this gets the output from get-process and organizes it 
     $command =  "cd C:\Capstone; powershell .\tasklist.ps1"
     plink.exe $server_username@$server_ip -pw $server_password -batch "plink.exe $username@$ip -pw $password -batch powershell $command"
 
@@ -1838,9 +1856,7 @@ function MainButtonOpenProcessesClick {
     $command =  "cd C:\Capstone; powershell more C:\Capstone\test_tasklist.csv"
     plink.exe $server_username@$server_ip -pw $server_password -batch "plink.exe $username@$ip -pw $password -batch powershell $command" | out-file $PSScriptRoot/tasklist.csv
 
-    #puts in a data-table
-    #$ProcessListDataGridView
-    #$ProcessListForm
+    #puts data from the csv in a data-table
     $task_list_array = new-object System.Collections.ArrayList
     $tasklist = Import-Csv "$PSScriptRoot\tasklist.csv"
     $task_list_array.AddRange($tasklist)
@@ -1848,13 +1864,9 @@ function MainButtonOpenProcessesClick {
     [void]$ProcessListForm.ShowDialog() 
  }
 
-
-#Functions for the Process List Form
-
 #Function to stop processes
 function ProcessListStopProcessClick{
     #$dataGridView.CurrentCell.RowIndex
-    
     #gets a row number selected
     #$TerminalInputTextbox.text = $ProcessListDataGridView.CurrentCell.RowIndex
 
@@ -1862,20 +1874,25 @@ function ProcessListStopProcessClick{
 
     #$TerminalInputTextbox.text = $ProcessListDataGridView.Rows[$row_index].Cells[1].value
     $selected_pid = $ProcessListDataGridView.Rows[$row_index].Cells[1].value
+    
+    #command stops the selected processes from the data grid view
     $command = "kill $selected_pid"
     
+    #imports the host information from sessions.csv 
     $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
     $sessions = ($sessions | Where-Object IP_Address -eq $MainComboboxSelectEndPoint.selecteditem)
     $ip = $MainComboboxSelectEndPoint.selecteditem
     $username = $sessions.Username
     $password = $sessions.Password
 
+    #imports the server information from sessions.csv
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
     $server_username = $servers.Username
     $server_password = $servers.Password
     
+    #performs the plink command sending it from the management console, to the server, to the managed host
     plink.exe $server_username@$server_ip -pw $server_password -batch "plink.exe $username@$ip -pw $password -batch powershell $command"
 
 
@@ -1888,8 +1905,6 @@ function ProcessListStopProcessClick{
     plink.exe $server_username@$server_ip -pw $server_password -batch "plink.exe $username@$ip -pw $password -batch powershell $command" | out-file $PSScriptRoot/tasklist.csv
 
     #puts in a data-table
-    #$ProcessListDataGridView
-    #$ProcessListForm
     $task_list_array = new-object System.Collections.ArrayList
     $tasklist = Import-Csv "$PSScriptRoot\tasklist.csv"
     $task_list_array.AddRange($tasklist)
@@ -1903,13 +1918,14 @@ function ProcessListStopProcessClick{
 function AddHostButtonClick{
     $EnteredIP = $AddHostTextBox.text
     
-    #temporary for showing functionality, migrate to csv functionality
+    #adds the entered IP address to the select endpoint combobox, the list of managed hosts
     @($EnteredIP) | ForEach-Object {[void] $MainComboboxSelectEndPoint.Items.Add($_)}
     
     $EnteredUsername = $AddHostUserNameTextBox.text
     $EnteredPassword = $AddHostPasswordTextBox.text
-    #putting it into csv
-
+    
+    #puts the entered information into the csv
+    #every time the program starts, it populates the select endpoint combobox from this csv
     $exists = (Test-Path -Path "$PSScriptRoot\sessions.csv" -PathType Leaf)
     if ($exists -eq $False)
         {
@@ -1919,32 +1935,34 @@ function AddHostButtonClick{
     $sessions = @(
     "$EnteredIP, $EnteredUsername, $EnteredPassword"
     )
-
     $sessions | foreach { Add-Content -Path  "$PSScriptRoot\sessions.csv" -Value $_ }
 
+    #once the values have been saved, the textboxes values are reset
     $AddHostTextBox.text = ""
     $AddHostUserNameTextBox.text = ""
     $AddHostPasswordTextBox.text = ""
  }
 
 
-#$dropdownFileType.SelectedItem
-
-
 #Functions for TerminalWindow Form
 function TerminalInputButtonClick{
+    #imports host info from csv
     $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
     $sessions = ($sessions | Where-Object IP_Address -eq $MainComboboxSelectEndPoint.selecteditem)
     $ip = $MainComboboxSelectEndPoint.selecteditem
     $username = $sessions.Username
     $password = $sessions.Password
 
+    #imports server info from csv
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
     $server_username = $servers.Username
     $server_password = $servers.Password
 
+    #passes the contents of the TerminalInputTextbox.text as a command to the host
+    #the output is stored in command_output.csv
+    #the output csv is used to populate a data grid view with the contents
     plink.exe $server_username@$server_ip -pw $server_password -batch "plink.exe $username@$ip -pw $password -batch" powershell $TerminalInputTextbox.text | Out-File $PSScriptRoot/command_output.csv
     $command_output_array = new-object System.Collections.ArrayList
     $command_output = Import-Csv "$PSScriptRoot\command_output.csv"
@@ -1956,17 +1974,19 @@ function TerminalInputButtonClick{
 }
 
 
-#Functions for task list form
 
+#Functions for task list form
 
 #functions for packet capture form
 function PacketCaptureAddAdapterButtonClick{
+    #gets client info from the csv
     $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
     $sessions = ($sessions | Where-Object IP_Address -eq $MainComboboxSelectEndPoint.selecteditem)
     $ip = $MainComboboxSelectEndPoint.selecteditem
     $username = $sessions.Username
     $password = $sessions.Password
 
+    #gets server info from the csv
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
@@ -1976,54 +1996,63 @@ function PacketCaptureAddAdapterButtonClick{
     #sets the label so you know which computer the adapters are from
     $PacketCaptureSelectAdapterLabel.text = "Select Network Adapter: $ip"
     
+    #runs the NetworkAdapters.ps1 script on the host. It gets a listof Network adapters
     $command =  "cd C:\Capstone; powershell ./NetworkAdapters.ps1"
     $output = (plink.exe $server_username@$server_ip -pw $server_password -batch "plink.exe $username@$ip -pw $password -batch powershell $command")
     @($output) | ForEach-Object {[void] $PacketCaptureSelectAdapterComboBox.Items.Add($_)}
 }
 
+
 #function to set file location
 Function PacketCaptureWriteLocationButtonClick
 {
+    #creates a button that can select a storage location on the management console computer
     [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms")|Out-Null
-
     $foldername = New-Object System.Windows.Forms.FolderBrowserDialog
     $foldername.Description = "Select a folder"
     $foldername.rootfolder = "MyComputer"
     $foldername.SelectedPath = $initialDirectory
-
     if($foldername.ShowDialog() -eq "OK")
     {
         $folder += $foldername.SelectedPath
     }
     $result = $folder
+    #the selected location is stored on the textbox
     $PacketCaptureLocalLocationTextbox.text = $result
 }
 
+
 Function PacketCaptureStartButtonClick
 {
+    #gets client info from the csv
     $sessions = Import-Csv "$PSScriptRoot\sessions.csv"
     $sessions = ($sessions | Where-Object IP_Address -eq $MainComboboxSelectEndPoint.selecteditem)
     $ip = $MainComboboxSelectEndPoint.selecteditem
     $username = $sessions.Username
     $password = $sessions.Password
 
+    #gets server info from the csv
     $servers = Import-Csv "$PSScriptRoot\servers.csv"
     $servers = ($servers | Where-Object IP_Address -eq $MainComboboxSelectServer.selecteditem)
     $server_ip = $MainComboboxSelectServer.selecteditem
     $server_username = $servers.Username
     $server_password = $servers.Password
 
+    #sets variables to pass as parameters from the values in the packet capture form
     $1 = $PacketCaptureSelectAdapterComboBox.selecteditem 
     $2 = $PacketCaptureSizeTextbox.text 
     $3 = $PacketCaptureDurationTextbox.text
     $4 = $PacketCaptureWriteLocationTextbox.text
     $5 = $PacketCaptureLocalLocationTextbox.text
+    #reformats the contents of $4 to be used with pscp
     $regex = $PacketCaptureWriteLocationTextbox.text -replace '[\\]', '/' 
 
     cd $PSScriptRoot
+    #creates a file to send commands to the host to perform a packet capture and stores it on the server
     "`$command = ""cd C:\Capstone; powershell -f 'PacketCapture2.ps1' $1 $2 $3 $4"" `nplink.exe $server_username@$server_ip -pw $server_password -batch ""plink.exe $username@$ip -pw $password -batch powershell `$command"" `n`$command = ""pscp -pw $password $username@$ip`:$regex C:\Capstone\$ip.pcap"" `nplink.exe $server_username@$server_ip -pw $server_password -batch powershell `$command " | Out-File -FilePath "$PSScriptRoot\PacketCapture.ps1" 
+    #runs the created file
     start PowerShell {.\PacketCapture.ps1}
-    #pscp -pw Patsword1 Administrator@192.168.142.135:C:/Capstone/$ip.pcap $5\$ip.pcap
+    #gets the packet capture from the server
     pscp -pw $server_password $server_username@$server_ip`:C:/Capstone/$ip.pcap $5\$ip.pcap
 }
 
@@ -2033,8 +2062,7 @@ Function PacketCaptureStartButtonClick
 function EditDashboardAddHostButton1Click {
     $SelectedHost = $EditDashboardComboboxSelectEndPoint1.SelectedItem
     
-    #temporary for showing functionality, migrate to csv functionality
-
+    #sets the IP address of the host for the dashboard row 1
     $exists = (Test-Path -Path "$PSScriptRoot\dashboard1.txt" -PathType Leaf)
     if ($exists -eq $True)
         {
@@ -2049,8 +2077,7 @@ function EditDashboardAddHostButton1Click {
 function EditDashboardAddHostButton2Click {
     $SelectedHost = $EditDashboardComboboxSelectEndPoint2.SelectedItem
     
-    #temporary for showing functionality, migrate to csv functionality
-
+    #sets the IP address of the host for the dashboard row 2
     $exists = (Test-Path -Path "$PSScriptRoot\dashboard2.txt" -PathType Leaf)
     if ($exists -eq $True)
         {
@@ -2065,8 +2092,7 @@ function EditDashboardAddHostButton2Click {
 function EditDashboardAddHostButton3Click {
     $SelectedHost = $EditDashboardComboboxSelectEndPoint3.SelectedItem
     
-    #temporary for showing functionality, migrate to csv functionality
-
+    #sets the IP address of the host for the dashboard row 3
     $exists = (Test-Path -Path "$PSScriptRoot\dashboard3.txt" -PathType Leaf)
     if ($exists -eq $True)
         {
@@ -2081,8 +2107,7 @@ function EditDashboardAddHostButton3Click {
 function EditDashboardAddHostButton4Click {
     $SelectedHost = $EditDashboardComboboxSelectEndPoint4.SelectedItem
     
-    #temporary for showing functionality, migrate to csv functionality
-
+    #sets the IP address of the host for the dashboard row 4
     $exists = (Test-Path -Path "$PSScriptRoot\dashboard4.txt" -PathType Leaf)
     if ($exists -eq $True)
         {
@@ -2099,12 +2124,14 @@ function EditDashboardAddHostButton4Click {
 function AddServerButtonClick {
     $EnteredIP = $AddServerTextBox.text
 
+    #populates the select server combobox with the server from the AddServerTextbox
     @($EnteredIP) | ForEach-Object {[void] $MainComboboxSelectServer.Items.Add($_)}
     
     $EnteredUsername = $AddServerUserNameTextBox.text
     $EnteredPassword = $AddServerUserNameTextBox.text
-    #putting it into csv
-
+    
+    #puts the values from the from in a csv
+    #when the program starts, it populates the select server combobox using this csv
     $exists = (Test-Path -Path "$PSScriptRoot\servers.csv" -PathType Leaf)
     if ($exists -eq $False)
         {
@@ -2114,13 +2141,21 @@ function AddServerButtonClick {
     $sessions = @(
     "$EnteredIP, $EnteredUsername, $EnteredPassword"
     )
-
     $sessions | foreach { Add-Content -Path  "$PSScriptRoot\servers.csv" -Value $_ }
 
+    #resets the values of the textboxes once the values have been saved
     $AddServerTextBox.text = ""
     $AddServerUserNameTextBox.text = ""
     $AddServerUserNameTextBox.text = ""
  }
+
+
+#the remove host button doesn't currently work. You can remove them by directly editing the sessions.csv, located in the same directory as the main.ps1 file.
+function MainButtonRemoveHostClick { 
+    $sessions = (Import-Csv "$PSScriptRoot\sessions.csv")
+    $sessions = (where IP_Address -NotLike $MainComboboxSelectEndPoint.selecteditem)
+    $sessions | Export-Csv "$PSScriptRoot\sessions.csv"
+}
 
 
 
